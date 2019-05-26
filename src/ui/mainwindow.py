@@ -55,7 +55,7 @@ try:
 
     # Import CNN models
     from nnmodels import available_models
-    from nnmodels import SegNet
+    from nnmodels import SegNet, VNet
 except ImportError as err:
     exit("{}: {}".format(__file__, err))
 
@@ -163,7 +163,7 @@ class MainWindow(QMainWindow):
         # Create a variable to prevent the use of an uninitialized model
         self.__is_model_loaded = False
         # Default model
-        self.DefaultModel = SegNet
+        self.DefaultModel = VNet
 
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normal_output_written)
