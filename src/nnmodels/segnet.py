@@ -8,11 +8,10 @@ try:
     from keras.models import Model
     from keras.layers import Input, Conv2D, Dropout, MaxPooling2D, UpSampling2D, Concatenate, Activation
     from keras.layers.normalization import BatchNormalization
-    from keras.layers.core import Reshape, Permute
     from keras.preprocessing.image import img_to_array, load_img, array_to_img
     from keras.optimizers import Adam, RMSprop
-    from keras.losses import categorical_crossentropy, sparse_categorical_crossentropy, binary_crossentropy
-    from keras.metrics import categorical_accuracy, sparse_categorical_accuracy, binary_accuracy
+    from keras.losses import categorical_crossentropy, binary_crossentropy
+    from keras.metrics import categorical_accuracy, binary_accuracy
 
     from os import listdir
     from os.path import isfile, exists, join, realpath, splitext, basename
@@ -37,7 +36,7 @@ except ImportError as err:
 
 class SegNet(CommonModel):
     """
-    Neural network model for buildings segmentation in aerial images.
+    SegNet model for image segmentation.
 
     Sources:
         - buildings dataset -> https://project.inria.fr/aerialimagelabeling/
@@ -254,14 +253,14 @@ class SegNet(CommonModel):
         # Learning rate
         learning_rate = 1e-4
         # Compiling the model with an optimizer and a loss function
-        self._model.compile(optimizer=Adam(lr=learning_rate, decay=learning_rate / epochs),
+        self._model.compile(optimizer=Adam(lr=learning_rate),
                             loss=binary_crossentropy,
                             metrics=[binary_accuracy])
 
         # Fitting the model by using our train and validation data
         # It returns the history that can be plot in the future
         if "train_generator" in self.datas and "val_generator" in self.datas:
-            # Fit including validation datas
+            # Fit including validation data
             self._history = self._model.fit_generator(
                 self.datas["train_generator"],
                 steps_per_epoch=1575,
