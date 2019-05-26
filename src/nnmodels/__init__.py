@@ -9,5 +9,6 @@ from .vnet         import VNet
 
 # This list contains all of the available neural network models
 available_models = {
-    SegNet.__name__.lower() : SegNet()
+    SegNet.__name__.lower() : SegNet(),
+    VNet.__name__.lower()   : VNet()
 }

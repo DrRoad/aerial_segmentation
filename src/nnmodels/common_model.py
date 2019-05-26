@@ -4,6 +4,8 @@ Common class for all the convolutional neural network model used for image segme
 try:
     from .model import NNModel
 
+    from keras.preprocessing.image import img_to_array, load_img, array_to_img
+
     import numpy as np
     from PIL import Image
     from imageio import imwrite
