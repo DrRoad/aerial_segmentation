@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+*.tif
+*.xml
+*.iml
+src/.vs/src/v15/.suo
+*.txt
+*.hdf5
+*.json

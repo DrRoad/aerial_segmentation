@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1012</width>
+    <height>644</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="createModelBtn">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>310</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Create Model</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="openModelBtn">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>520</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Open Model</string>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>310</y>
+      <width>151</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>ArrowCursor</cursorShape>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QTextEdit" name="textEdit">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>30</y>
+      <width>261</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="imageLabel">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>20</y>
+      <width>28</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Image</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>10</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Console</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>121</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Image to predict</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="stopModelCreationBtn">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>390</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Stop Creation</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>560</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Model -&gt; </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="currentModel">
+    <property name="geometry">
+     <rect>
+      <x>840</x>
+      <y>560</y>
+      <width>161</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>None</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>126</x>
+      <y>90</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Predicted value:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="predictedValue">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>90</y>
+      <width>51</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>None</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="predictValueBtn">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>90</y>
+      <width>93</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Predict value</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="plotBtn">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>560</y>
+      <width>121</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Plot</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>701</width>
+      <height>411</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="plotLayout"/>
+   </widget>
+   <widget class="QRadioButton" name="roadsRadioBtn">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>460</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Roads</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="digitsRadioBtn">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>430</y>
+      <width>95</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Digits</string>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="animalsRadioBtn">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>430</y>
+      <width>95</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Animals</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="useConsoleCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>10</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Use console</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="tristate">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="aerialBuildingsRadioBtn">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>460</y>
+      <width>111</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Aerial buildings</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="kidneysRadioBtn">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>490</y>
+      <width>95</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Kidneys</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="aerialRoadsRadioBtn">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>490</y>
+      <width>95</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Aerial roads</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="multipleLearningBtn">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>350</y>
+      <width>111</width>
+      <height>28</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="text">
+     <string>Multiple learning</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="loggerCheckBox">
+    <property name="geometry">
+     <rect>
+      <x>790</x>
+      <y>280</y>
+      <width>101</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Use logger</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+    <property name="tristate">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>280</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Logger</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1012</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="openAct"/>
+    <addaction name="separator"/>
+    <addaction name="exitAct"/>
+   </widget>
+   <addaction name="fileMenu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="exitAct">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="openAct">
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="shortcutVisibleInContextMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
