@@ -267,6 +267,9 @@ class MainWindow(QMainWindow):
         """
         Appends text to the QTextEdit.
         """
+        if text in ["\n", "\r", "\t"]:
+            pass
+
         # If we're currently generating a new neural network model
         if self.model.is_training():
             txt_split = text.split(" ")

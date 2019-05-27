@@ -88,7 +88,7 @@ class Ui_MainWindow(object):
         self.animalsRadioBtn.setObjectName("animalsRadioBtn")
         self.useConsoleCheckBox = QtWidgets.QCheckBox(self.centralwidget)
         self.useConsoleCheckBox.setGeometry(QtCore.QRect(790, 10, 101, 20))
-        self.useConsoleCheckBox.setChecked(True)
+        self.useConsoleCheckBox.setChecked(False)
         self.useConsoleCheckBox.setTristate(False)
         self.useConsoleCheckBox.setObjectName("useConsoleCheckBox")
         self.aerialBuildingsRadioBtn = QtWidgets.QRadioButton(self.centralwidget)
