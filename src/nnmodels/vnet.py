@@ -270,11 +270,11 @@ class VNet(CommonModel):
         # Number of epochs
         epochs = 10
         # Learning rate
-        learning_rate = 1e-4
+        learning_rate = 1e-3
         # Compiling the model with an optimizer and a loss function
         self._model.compile(optimizer=Adam(lr=learning_rate),
-                            loss=binary_crossentropy,
-                            metrics=[binary_accuracy])
+                            loss=dice_coef_loss,
+                            metrics=["accuracy"])
 
         # Fitting the model by using our train and validation data
         # It returns the history that can be plot in the future
