@@ -5,20 +5,41 @@ except ImportError as err:
     exit(err)
 
 
-def dice_coef(y_true, y_pred, smooth=1):
+def dice_coef(y_true, y_pred, loss_type='jaccard', axis=[1, 2, 3], smooth=1e-5):
     """
+    Dice coefficient calculation.
+
     From: https://github.com/keras-team/keras/issues/3611 and
     https://github.com/keras-team/keras/issues/3611#issuecomment-243108708
+
+    # References
+        V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation
+        https://arxiv.org/abs/1606.04797
     """
-    intersection = K.sum(y_true * y_pred, axis=[1, 2, 3])
-    union = K.sum(y_true, axis=[1, 2, 3]) + K.sum(y_pred, axis=[1, 2, 3])
+    if loss_type == 'jaccard':
+        t = K.sum(K.square(y_true), axis=axis)
+        p = K.sum(K.square(y_pred), axis=axis)
+    elif loss_type == 'sorensen':
+        t = K.sum(y_true, axis=axis)
+        p = K.sum(y_pred, axis=axis)
+    else:
+        raise Exception("Unknown loss_type")
+
+    intersection = K.sum(y_true * y_pred, axis=axis)
+    union = t + p
     return K.mean((2. * intersection + smooth)/(union + smooth), axis=0)
 
 
 def dice_coef_loss(y_true, y_pred):
     """
+    Dice coefficient loss function.
+
     From: https://github.com/keras-team/keras/issues/3611 and
     https://github.com/keras-team/keras/issues/3611#issuecomment-243108708
+
+    # References
+        V-Net: Fully Convolutional Neural Networks for Volumetric Medical Image Segmentation
+        https://arxiv.org/abs/1606.04797
     """
     return 1 - dice_coef(y_true, y_pred)
 
