@@ -29,7 +29,7 @@ try:
 
     import numpy as np
     from utils import preprocessing as prep
-    from utils.losses import dice_coef_loss
+    from utils.losses import dice_coef_loss, dice_coef_multilabel, tversky_loss
 except ImportError as err:
     exit(err)
 
@@ -273,7 +273,7 @@ class VNet(CommonModel):
         learning_rate = 1e-3
         # Compiling the model with an optimizer and a loss function
         self._model.compile(optimizer=Adam(lr=learning_rate),
-                            loss=dice_coef_loss,
+                            loss=tversky_loss,
                             metrics=["accuracy"])
 
         # Fitting the model by using our train and validation data
