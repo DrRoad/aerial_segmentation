@@ -44,6 +44,7 @@ try:
     config = tf.ConfigProto(intra_op_parallelism_threads=0,
                             inter_op_parallelism_threads=0,
                             allow_soft_placement=True,
+                            log_device_placement=True,
                             device_count={'CPU': num_CPU,
                                           'GPU': num_GPU},
                             gpu_options=tf.GPUOptions(allow_growth=True)
@@ -55,7 +56,7 @@ try:
 
     # Import CNN models
     from nnmodels import available_models
-    from nnmodels import SegNet, VNet
+    from nnmodels import SegNet, VNet, VegNet
 except ImportError as err:
     exit("{}: {}".format(__file__, err))
 
@@ -163,7 +164,7 @@ class MainWindow(QMainWindow):
         # Create a variable to prevent the use of an uninitialized model
         self.__is_model_loaded = False
         # Default model
-        self.DefaultModel = VNet
+        self.DefaultModel = VegNet
 
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normal_output_written)

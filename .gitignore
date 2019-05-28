@@ -109,3 +109,5 @@ src/.vs/src/v15/.suo
 *.txt
 *.hdf5
 *.json
+*.png
+*.jpg

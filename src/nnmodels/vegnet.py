@@ -29,14 +29,15 @@ try:
 
     import numpy as np
     from utils import preprocessing as prep
-    from utils.losses import dice_coef_loss, dice_coef_multilabel, tversky_loss
+    from utils.losses import dice_coef_loss
+    from .layers.pooling import MaxPoolingWithArgmax2D, MaxUnpooling2D
 except ImportError as err:
     exit(err)
 
 
-class VNet(CommonModel):
+class VegNet(CommonModel):
     """
-    VNet model for image segmentation.
+    Mix between V-Net and SegNet models for image segmentation.
 
     Sources:
         - buildings dataset -> https://project.inria.fr/aerialimagelabeling/
@@ -46,7 +47,7 @@ class VNet(CommonModel):
         """
         Initialization of the model.
         """
-        super().__init__(model_name=self.__class__.__name__.lower(), input_shape=(256, 256, 3))
+        super().__init__(model_name=self.__class__.__name__.lower(), input_shape=(352, 352, 3))
 
     def create_layers(self):
         """
@@ -125,23 +126,23 @@ class VNet(CommonModel):
         conv1 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv1_1')(inputs)
         acti1 = Activation(tf.nn.relu, name='acti1')(conv1)
         # Down-convolution
-        down_conv1 = Conv2D(16, (2, 2), strides=(2, 2), data_format='channels_last', name='down_conv1_1')(acti1)
+        pool_1, mask_1 = MaxPoolingWithArgmax2D((2, 2))(acti1)
 
         # ----- Second Convolution - Down-convolution -----
         # 5x5 Convolution
-        conv2 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv2_1')(down_conv1)
+        conv2 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv2_1')(pool_1)
         acti2 = Activation(tf.nn.relu, name='acti2_1')(conv2)
         # 5x5 Convolution
         conv2 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv2_2')(acti2)
         acti2 = Activation(tf.nn.relu, name='acti2_2')(conv2)
         # Add layer
-        add2 = Add(name='add2_1')([down_conv1, acti2])
+        add2 = Add(name='add2_1')([conv2, acti2])
         # Down-convolution
-        down_conv2 = Conv2D(32, (2, 2), strides=(2, 2), data_format='channels_last', name='down_conv2_1')(add2)
+        pool_2, mask_2 = MaxPoolingWithArgmax2D((2, 2))(add2)
 
         # ----- Third Convolution - Down-convolution -----
         # 5x5 Convolution
-        conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_1')(down_conv2)
+        conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_1')(pool_2)
         acti3 = Activation(tf.nn.relu, name='acti3_1')(conv3)
         # 5x5 Convolution
         conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_2')(acti3)
@@ -150,13 +151,13 @@ class VNet(CommonModel):
         conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_3')(acti3)
         acti3 = Activation(tf.nn.relu, name='acti3_3')(conv3)
         # Add layer
-        add3 = Add(name='add3_1')([down_conv2, acti3])
+        add3 = Add(name='add3_1')([conv3, acti3])
         # Down-convolution
-        down_conv3 = Conv2D(64, (2, 2), strides=(2, 2), data_format='channels_last', name='down_conv3_1')(add3)
+        pool_3, mask_3 = MaxPoolingWithArgmax2D((2, 2))(add3)
 
         # ----- Fourth Convolution - Down-convolution -----
         # 5x5 Convolution
-        conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_1')(down_conv3)
+        conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_1')(pool_3)
         acti4 = Activation(tf.nn.relu, name='acti4_1')(conv4)
         # 5x5 Convolution
         conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_2')(acti4)
@@ -165,13 +166,13 @@ class VNet(CommonModel):
         conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_3')(acti4)
         acti4 = Activation(tf.nn.relu, name='acti4_3')(conv4)
         # Add layer
-        add4 = Add(name='add4_1')([down_conv3, acti4])
+        add4 = Add(name='add4_1')([conv4, acti4])
         # Down-convolution
-        down_conv4 = Conv2D(128, (2, 2), strides=(2, 2), data_format='channels_last', name='down_conv4_1')(add4)
+        pool_4, mask_4 = MaxPoolingWithArgmax2D((2, 2))(add4)
 
         # ----- Fifth Convolution -----
         # 5x5 Convolution
-        conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_1')(down_conv4)
+        conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_1')(pool_4)
         acti5 = Activation(tf.nn.relu, name='acti5_1')(conv5)
         # 5x5 Convolution
         conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_2')(acti5)
@@ -180,80 +181,88 @@ class VNet(CommonModel):
         conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_3')(acti5)
         acti5 = Activation(tf.nn.relu, name='acti5_3')(conv5)
         # Add layer
-        add5 = Add(name='add5_1')([down_conv4, acti5])
+        add5 = Add(name='add5_1')([conv5, acti5])
         # Up-convolution
-        up_conv5 = Conv2DTranspose(64, (2, 2), strides=(2, 2), data_format='channels_last', name='up_conv5')(add5)
+        pool_5, mask_5 = MaxPoolingWithArgmax2D((2, 2))(add5)
 
         # ----- Sixth Convolution -----
+        # MaxUnpooling
+        unpool_6 = MaxUnpooling2D((2, 2))([pool_5, mask_5])
         # Concatenation
-        conc6 = Concatenate(axis=3, name='conc6')([up_conv5, add4])
+        conc6 = Concatenate(axis=3, name='conc6')([unpool_6, add5])
         # 5x5 Convolution
-        conv6 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv6_1')(conc6)
+        conv6 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv6_1')(conc6)
         acti6 = Activation(tf.nn.relu, name='acti6_1')(conv6)
         # 5x5 Convolution
-        conv6 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv6_2')(acti6)
+        conv6 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv6_2')(acti6)
         acti6 = Activation(tf.nn.relu, name='acti6_2')(conv6)
         # 5x5 Convolution
-        conv6 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv6_3')(acti6)
+        conv6 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv6_3')(acti6)
         acti6 = Activation(tf.nn.relu, name='acti6_3')(conv6)
         # Add layer
-        add6 = Add(name='add6_1')([up_conv5, acti6])
-        # Up-convolution
-        up_conv6 = Conv2DTranspose(32, (2, 2), strides=(2, 2), data_format='channels_last', name='up_conv6')(add6)
+        add6 = Add(name='add6_1')([unpool_6, acti6])
 
         # ----- Seventh Convolution -----
-        # Concatenation
-        conc7 = Concatenate(axis=3, name='conc7')([up_conv6, add3])
         # 5x5 Convolution
-        conv7 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv7_1')(conc7)
+        conv7 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv7_1')(add6)
         acti7 = Activation(tf.nn.relu, name='acti7_1')(conv7)
+        # Up-convolution
+        unpool_7 = MaxUnpooling2D((2, 2))([acti7, mask_4])
+        # Concatenation
+        conc7 = Concatenate(axis=3, name='conc7')([unpool_7, add4])
         # 5x5 Convolution
-        conv7 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv7_2')(acti7)
+        conv7 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv7_2')(conc7)
         acti7 = Activation(tf.nn.relu, name='acti7_2')(conv7)
         # 5x5 Convolution
-        conv7 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv7_3')(acti7)
+        conv7 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv7_3')(acti7)
         acti7 = Activation(tf.nn.relu, name='acti7_3')(conv7)
         # Add layer
-        add7 = Add(name='add7_1')([up_conv6, acti7])
-        # Up-convolution
-        up_conv7 = Conv2DTranspose(16, (2, 2), strides=(2, 2), data_format='channels_last', name='up_conv7')(add7)
+        add7 = Add(name='add7_1')([unpool_7, acti7])
 
         # ----- Eighth Convolution -----
-        # Concatenation
-        conc8 = Concatenate(axis=3, name='conc8')([up_conv7, add2])
         # 5x5 Convolution
-        conv8 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv8_1')(conc8)
+        conv8 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv8_1')(add7)
         acti8 = Activation(tf.nn.relu, name='acti8_1')(conv8)
+        # Up-convolution
+        unpool_8 = MaxUnpooling2D((2, 2))([acti8, mask_3])
+        # Concatenation
+        conc8 = Concatenate(axis=3, name='conc8')([unpool_8, add3])
         # 5x5 Convolution
-        conv8 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv8_2')(acti8)
+        conv8 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv8_2')(conc8)
         acti8 = Activation(tf.nn.relu, name='acti8_2')(conv8)
         # 5x5 Convolution
-        conv8 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv8_3')(acti8)
+        conv8 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv8_3')(acti8)
         acti8 = Activation(tf.nn.relu, name='acti8_3')(conv8)
         # Add layer
-        add8 = Add(name='add8_1')([up_conv7, acti8])
-        # Up-convolution
-        up_conv8 = Conv2DTranspose(8, (2, 2), strides=(2, 2), data_format='channels_last', name='up_conv8')(add8)
+        add8 = Add(name='add8_1')([unpool_8, acti8])
 
         # ----- Ninth Convolution -----
         # 5x5 Convolution
-        conv9 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv9_1')(up_conv8)
+        conv9 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv9_1')(add8)
         acti9 = Activation(tf.nn.relu, name='acti9_1')(conv9)
+        # Up-convolution
+        unpool_9 = MaxUnpooling2D((2, 2))([acti9, mask_2])
+        # Concatenation
+        conc9 = Concatenate(axis=3, name='conc9')([unpool_9, add2])
         # 5x5 Convolution
-        conv9 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv9_2')(acti9)
+        conv9 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv9_2')(conc9)
         acti9 = Activation(tf.nn.relu, name='acti9_2')(conv9)
-        # 5x5 Convolution
-        conv9 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv9_3')(acti9)
-        acti9 = Activation(tf.nn.relu, name='acti9_3')(conv9)
         # Add layer
-        add9 = Add(name='add9_1')([up_conv8, acti9])
+        add9 = Add(name='add9_1')([unpool_9, acti9])
 
         # ----- Tenth Convolution -----
-        conv10 = Conv2D(self.n_classes, (1, 1), padding='same', data_format='channels_last', name='conv10_1')(add9)
-        acti10 = Activation(tf.nn.softmax, name='acti10_1')(conv10)
+        # 5x5 Convolution
+        conv10 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv10_1')(add9)
+        acti10 = Activation(tf.nn.relu, name='acti10_1')(conv10)
+        # Up-convolution
+        unpool_10 = MaxUnpooling2D((2, 2))([acti10, mask_1])
+
+        # ----- Eleventh Convolution -----
+        conv11 = Conv2D(self.n_classes, (1, 1), padding='same', data_format='channels_last', name='conv11_1')(unpool_10)
+        acti11 = Activation(tf.nn.softmax, name='acti11_1')(conv11)
 
         # Set a new model with the inputs and the outputs (tenth convolution)
-        self.set_model(Model(inputs=inputs, outputs=acti10))
+        self.set_model(Model(inputs=inputs, outputs=acti11))
 
         # Get a summary of the previously create model
         self.get_model().summary()
@@ -273,7 +282,7 @@ class VNet(CommonModel):
         learning_rate = 1e-3
         # Compiling the model with an optimizer and a loss function
         self._model.compile(optimizer=Adam(lr=learning_rate),
-                            loss=dice_coef_loss(),
+                            loss=categorical_crossentropy,
                             metrics=["accuracy"])
 
         # Fitting the model by using our train and validation data

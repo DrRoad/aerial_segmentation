@@ -5,7 +5,7 @@ except ImportError as err:
     exit(err)
 
 
-def dice_coef(y_true, y_pred, loss_type='jaccard', axis=None, smooth=1e-5):
+def dice_coef(y_true, y_pred, loss_type='sorensen', axis=None, smooth=1e-5):
     """
     Dice coefficient calculation.
 
@@ -26,7 +26,7 @@ def dice_coef(y_true, y_pred, loss_type='jaccard', axis=None, smooth=1e-5):
         t = K.sum(y_true, axis=axis)
         p = K.sum(y_pred, axis=axis)
     else:
-        raise Exception("Unknown loss_type")
+        raise Exception("Unknown loss_type: {}".format(loss_type))
 
     intersection = K.sum(y_true * y_pred, axis=axis)
     union = t + p
