@@ -73,6 +73,27 @@ class MaxPoolingWithArgmax2D(Layer):
         """
         return 2 * [None]
 
+    def get_config(self):
+        """
+        Returns the config of the layer.
+
+        A layer config is a Python dictionary (serializable)
+        containing the configuration of a layer.
+        The same layer can be reinstantiated later
+        (without its trained weights) from this configuration.
+
+        # Returns
+            Python dictionary.
+
+        From: keras.layers.Layer.get_config documentation.
+        """
+        config = {'pool_size': self.pool_size,
+                  'padding': self.padding,
+                  'strides': self.strides
+                  }
+        base_config = super().get_config()
+        return dict(list(base_config.items()) + list(config.items()))
+
 
 class MaxUnpooling2D(Layer):
     """
@@ -142,6 +163,25 @@ class MaxUnpooling2D(Layer):
             mask_shape[2] * self.size[1],
             mask_shape[3]
         )
+
+    def get_config(self):
+        """
+        Returns the config of the layer.
+
+        A layer config is a Python dictionary (serializable)
+        containing the configuration of a layer.
+        The same layer can be reinstantiated later
+        (without its trained weights) from this configuration.
+
+        # Returns
+            Python dictionary.
+
+        From: keras.layers.Layer.get_config documentation.
+        """
+        config = {'size': self.size,
+                  }
+        base_config = super().get_config()
+        return dict(list(base_config.items()) + list(config.items()))
 
 
 if __name__ == "__main__":
