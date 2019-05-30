@@ -10,6 +10,7 @@ try:
     import glob
     import numpy as np
     from PIL import Image
+    from scipy.misc import imresize
     from imageio import imwrite
     from skimage.transform import resize
     from utils import preprocessing as prep
@@ -165,13 +166,13 @@ class CommonModel(NNModel):
                 x_img = img_to_array(load_img(x_files[index]))
                 y_img = img_to_array(load_img(y_files[index]))
 
-                del(x_files[index])
-                del(y_files[index])
+                # del(x_files[index])
+                # del(y_files[index])
                 nbr_files -= 1
 
                 # Resize each image
-                x_img = resize(x_img, self.input_shape[:2], preserve_range=True)
-                y_img = resize(y_img, self.input_shape[:2], preserve_range=True).astype(int)
+                x_img = imresize(x_img, self.input_shape[:2])  # , preserve_range=True)
+                y_img = imresize(y_img, self.input_shape[:2])  # , preserve_range=True).astype(int)
                 # Apply a transformation on these images
                 # x_img, y_img = prep.transform_xy(x_img, y_img)
                 # Change y shape : (m, n, 3) -> (m, n, 2) (2 is the class number)
