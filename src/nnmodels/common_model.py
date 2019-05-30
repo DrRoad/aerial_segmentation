@@ -147,18 +147,28 @@ class CommonModel(NNModel):
         assert exists(y_dir) is True
 
         # FIX: glob.glob is waaaaay faster than [f for f in listdir() if isfile(f)]
-        x_files = [f for f_ in [glob.glob(join(x_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
-        y_files = [f for f_ in [glob.glob(join(y_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
+        xfiles = [f for f_ in [glob.glob(join(x_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
+        yfiles = [f for f_ in [glob.glob(join(y_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
 
-        assert len(x_files) == len(y_files)
+        assert len(xfiles) == len(yfiles)
 
         # Number of files
-        nbr_files = len(x_files)
+        nbr_files = len(xfiles)
+
+        assert nbr_files % batch_size == 0
+
+        # Copy
+        x_files = xfiles.copy()
+        y_files = yfiles.copy()
         while True:
             x, y = list(), list()
             for _ in range(batch_size):
+                if nbr_files == -1:
+                    x_files = xfiles.copy()
+                    y_files = yfiles.copy()
+
                 # Get a new index
-                index = random.randint(0, nbr_files-1)
+                index = x_files.index(random.choice(x_files))
 
                 # MUST be true (files must have the same name)
                 assert pathsplit(x_files[index])[-1] == pathsplit(y_files[index])[-1]
@@ -166,13 +176,9 @@ class CommonModel(NNModel):
                 x_img = img_to_array(load_img(x_files[index]))
                 y_img = img_to_array(load_img(y_files[index]))
 
-                del(x_files[index])
-                del(y_files[index])
-                nbr_files -= 1
-
                 # Resize each image
-                x_img = imresize(x_img, self.input_shape[:2])  # , preserve_range=True)
-                y_img = imresize(y_img, self.input_shape[:2])  # , preserve_range=True).astype(int)
+                x_img = imresize(x_img, self.input_shape[:2])
+                y_img = imresize(y_img, self.input_shape[:2])
                 # Apply a transformation on these images
                 # x_img, y_img = prep.transform_xy(x_img, y_img)
                 # Change y shape : (m, n, 3) -> (m, n, 2) (2 is the class number)
@@ -191,6 +197,11 @@ class CommonModel(NNModel):
                 # Append images to the lists
                 x.append(x_img)
                 y.append(y_img)
+
+                # Delete these elements
+                del(x_files[index])
+                del(y_files[index])
+                nbr_files -= 1
             yield np.array(x), np.array(y)
 
     # Abstract methods
