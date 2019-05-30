@@ -18,6 +18,8 @@ try:
     from datetime import datetime
 
     from keras.models import model_from_json
+
+    from .layers.pooling import MaxUnpooling2D, MaxPoolingWithArgmax2D
 except ImportError as err:
     exit("{}: {}".format(__file__, err))
 
@@ -177,7 +179,13 @@ class NNModel(object):
         architecture = json_file.read()
         json_file.close()
         # Create a model from a json file
-        self._model = model_from_json(architecture)
+        self._model = model_from_json(architecture,
+                                      custom_objects={
+                                          'MaxPoolingWithArgmax2D': MaxPoolingWithArgmax2D,
+                                          'MaxUnpooling2D': MaxUnpooling2D
+                                      })
+
+        print(self._model)
         # Load weights into the model
         self._model.load_weights(weights_file_name)
 
