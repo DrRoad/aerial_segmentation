@@ -2,7 +2,6 @@ try:
     from . import CommonModel
 
     from PIL import Image
-    from scipy.misc import imsave, imresize
 
     # Importing the required Keras modules containing models, layers, optimizers, losses, etc
     from keras.models import Model
@@ -20,8 +19,6 @@ try:
     from random import randint
 
     import tensorflow as tf
-
-    import glob
 
     import matplotlib.pyplot as plt
 
@@ -60,61 +57,9 @@ class VegNet(CommonModel):
         assert exists(train_dir) is True
         assert exists(val_dir) is True
 
-        def create_generator(folder, batch_size=2):
-            x_dir = join(folder, "x")
-            y_dir = join(folder, "y")
-
-            assert exists(x_dir) is True
-            assert exists(y_dir) is True
-
-            # FIX: glob.glob is waaaaay faster than [f for f in listdir() if isfile(f)]
-            x_files = glob.glob(join(x_dir, "*.tif")) + glob.glob(join(x_dir, "*.tiff"))
-            y_files = glob.glob(join(y_dir, "*.tif")) + glob.glob(join(y_dir, "*.tiff"))
-
-            assert len(x_files) == len(y_files)
-
-            # Number of files
-            nbr_files = len(x_files)
-            # Let's begin the training/validation with the first file
-            index = 0
-            while True:
-                x, y = list(), list()
-                for i in range(batch_size):
-                    # Get a new index
-                    index = (index + 1) % nbr_files
-
-                    # MUST be true (files must have the same name)
-                    assert pathsplit(x_files[index])[-1] == pathsplit(y_files[index])[-1]
-
-                    x_img = img_to_array(load_img(x_files[index]))
-                    y_img = img_to_array(load_img(y_files[index]))
-
-                    # Resize each image
-                    x_img, y_img = imresize(x_img, self.input_shape[:2]), imresize(y_img, self.input_shape[:2])
-                    # Apply a transformation on these images
-                    # x_img, y_img = prep.transform_xy(x_img, y_img)
-
-                    # Change y shape : (m, n, 3) -> (m, n, 2) (2 is the class number)
-                    temp_y_img = np.zeros(self.input_shape[:2] + (self.n_classes,))
-                    temp_y_img[y_img[:, :, 0] == 0]   = [1, 0]
-                    temp_y_img[y_img[:, :, 0] == 255] = [0, 1]
-                    y_img = temp_y_img
-
-                    assert y_img.shape[2] == self.n_classes
-
-                    # Convert to float
-                    x_img = x_img.astype('float32')
-                    y_img = y_img.astype('float32')
-                    # Divide by the maximum value of each pixel
-                    x_img /= 255
-                    # Append images to the lists
-                    x.append(x_img)
-                    y.append(y_img)
-                yield np.array(x), np.array(y)
-
         # Create a generator for each step
-        train_generator = create_generator(train_dir, 8)  # 12600 images
-        val_generator = create_generator(val_dir, 8)  # 5400 images
+        train_generator = self.create_generator(train_dir, 8)  # 12600 images
+        val_generator = self.create_generator(val_dir, 8)  # 5400 images
 
         # Data
         self.data = {"train_generator": train_generator, "val_generator": val_generator}
@@ -130,20 +75,20 @@ class VegNet(CommonModel):
 
         # ----- Second Convolution - Down-convolution -----
         # 5x5 Convolution
-        conv2 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv2_1')(pool_1)
-        acti2 = Activation(tf.nn.relu, name='acti2_1')(conv2)
+        conv2_1 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv2_1')(pool_1)
+        acti2 = Activation(tf.nn.relu, name='acti2_1')(conv2_1)
         # 5x5 Convolution
         conv2 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv2_2')(acti2)
         acti2 = Activation(tf.nn.relu, name='acti2_2')(conv2)
         # Add layer
-        add2 = Add(name='add2_1')([conv2, acti2])
+        add2 = Add(name='add2_1')([conv2_1, acti2])
         # Down-convolution
         pool_2, mask_2 = MaxPoolingWithArgmax2D((2, 2))(add2)
 
         # ----- Third Convolution - Down-convolution -----
         # 5x5 Convolution
-        conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_1')(pool_2)
-        acti3 = Activation(tf.nn.relu, name='acti3_1')(conv3)
+        conv3_1 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_1')(pool_2)
+        acti3 = Activation(tf.nn.relu, name='acti3_1')(conv3_1)
         # 5x5 Convolution
         conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_2')(acti3)
         acti3 = Activation(tf.nn.relu, name='acti3_2')(conv3)
@@ -151,14 +96,14 @@ class VegNet(CommonModel):
         conv3 = Conv2D(32, (5, 5), padding='same', data_format='channels_last', name='conv3_3')(acti3)
         acti3 = Activation(tf.nn.relu, name='acti3_3')(conv3)
         # Add layer
-        add3 = Add(name='add3_1')([conv3, acti3])
+        add3 = Add(name='add3_1')([conv3_1, acti3])
         # Down-convolution
         pool_3, mask_3 = MaxPoolingWithArgmax2D((2, 2))(add3)
 
         # ----- Fourth Convolution - Down-convolution -----
         # 5x5 Convolution
-        conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_1')(pool_3)
-        acti4 = Activation(tf.nn.relu, name='acti4_1')(conv4)
+        conv4_1 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_1')(pool_3)
+        acti4 = Activation(tf.nn.relu, name='acti4_1')(conv4_1)
         # 5x5 Convolution
         conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_2')(acti4)
         acti4 = Activation(tf.nn.relu, name='acti4_2')(conv4)
@@ -166,14 +111,14 @@ class VegNet(CommonModel):
         conv4 = Conv2D(64, (5, 5), padding='same', data_format='channels_last', name='conv4_3')(acti4)
         acti4 = Activation(tf.nn.relu, name='acti4_3')(conv4)
         # Add layer
-        add4 = Add(name='add4_1')([conv4, acti4])
+        add4 = Add(name='add4_1')([conv4_1, acti4])
         # Down-convolution
         pool_4, mask_4 = MaxPoolingWithArgmax2D((2, 2))(add4)
 
         # ----- Fifth Convolution -----
         # 5x5 Convolution
-        conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_1')(pool_4)
-        acti5 = Activation(tf.nn.relu, name='acti5_1')(conv5)
+        conv5_1 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_1')(pool_4)
+        acti5 = Activation(tf.nn.relu, name='acti5_1')(conv5_1)
         # 5x5 Convolution
         conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_2')(acti5)
         acti5 = Activation(tf.nn.relu, name='acti5_2')(conv5)
@@ -181,7 +126,7 @@ class VegNet(CommonModel):
         conv5 = Conv2D(128, (5, 5), padding='same', data_format='channels_last', name='conv5_3')(acti5)
         acti5 = Activation(tf.nn.relu, name='acti5_3')(conv5)
         # Add layer
-        add5 = Add(name='add5_1')([conv5, acti5])
+        add5 = Add(name='add5_1')([conv5_1, acti5])
         # Up-convolution
         pool_5, mask_5 = MaxPoolingWithArgmax2D((2, 2))(add5)
 
@@ -282,8 +227,8 @@ class VegNet(CommonModel):
         learning_rate = 1e-3
         # Compiling the model with an optimizer and a loss function
         self._model.compile(optimizer=Adam(lr=learning_rate),
-                            loss=categorical_crossentropy,
-                            metrics=["accuracy"])
+                            loss=binary_crossentropy,
+                            metrics=[binary_accuracy])
 
         # Fitting the model by using our train and validation data
         # It returns the history that can be plot in the future

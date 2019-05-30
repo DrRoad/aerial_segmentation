@@ -5,13 +5,15 @@ try:
     from .model import NNModel
 
     from keras.preprocessing.image import img_to_array, load_img, array_to_img
-
+    import glob
     import numpy as np
     from PIL import Image
     from imageio import imwrite
     from skimage.transform import resize
-    from utils import preprocessing as pp
-    from os.path import splitext, basename
+    from utils import preprocessing as prep
+    from utils import postprocessing as postp
+    from os.path import splitext, basename, join, exists
+    from os.path import split as pathsplit
     import time
 except ImportError as err:
     exit("{}: {}".format(__file__, err))
@@ -125,14 +127,70 @@ class CommonModel(NNModel):
             # Create a new Image instance with the new_img_array array
             new_img = Image.fromarray(img_to_predict.astype('uint8'))
             # Finally, save this image
-            new_img.save(basename(splitext(filename)[0]) + "_segmented_img.jpg")
+            new_img.save(basename(splitext(filename)[0]) + "_segmented_img_test.jpg")
             # Save the unsegmented image
-            imwrite(basename(splitext(filename)[0]) + "_unsegmented_img.jpg", np.array(Image.open(filename)))
+            imwrite(basename(splitext(filename)[0]) + "_unsegmented_img_test.jpg", np.array(Image.open(filename)))
 
             # Hold on, close the pointers before leaving
             new_img.close()
 
             print("Done")
+
+    def create_generator(self, folder, batch_size=2):
+        x_dir = join(folder, "x")
+        y_dir = join(folder, "y")
+
+        assert exists(x_dir) is True
+        assert exists(y_dir) is True
+
+        # FIX: glob.glob is waaaaay faster than [f for f in listdir() if isfile(f)]
+        x_files = glob.glob(join(x_dir, "*.tif")) + glob.glob(join(x_dir, "*.tiff"))
+        y_files = glob.glob(join(y_dir, "*.tif")) + glob.glob(join(y_dir, "*.tiff"))
+
+        assert len(x_files) == len(y_files)
+
+        # Number of files
+        nbr_files = len(x_files)
+        # Let's begin the training/validation with the first file
+        index = 0
+        while True:
+            x, y = list(), list()
+            for i in range(batch_size):
+                # Get a new index
+                index = (index + 1) % nbr_files
+
+                # MUST be true (files must have the same name)
+                assert pathsplit(x_files[index])[-1] == pathsplit(y_files[index])[-1]
+
+                x_img = img_to_array(load_img(x_files[index]))
+                y_img = img_to_array(load_img(y_files[index]))
+
+                del(x_files[index])
+                del(y_files[index])
+
+                # Resize each image
+                x_img = resize(x_img, self.input_shape[:2], preserve_range=True)
+                y_img = resize(y_img, self.input_shape[:2], preserve_range=True).astype(int)
+                # Apply a transformation on these images
+                # x_img, y_img = prep.transform_xy(x_img, y_img)
+
+                # Change y shape : (m, n, 3) -> (m, n, 2) (2 is the class number)
+                temp_y_img = np.zeros(self.input_shape[:2] + (self.n_classes,))
+                temp_y_img[y_img[:, :, 0] == 0] = [1, 0]
+                temp_y_img[y_img[:, :, 0] == 255] = [0, 1]
+                y_img = temp_y_img
+
+                assert y_img.shape[2] == self.n_classes
+
+                # Convert to float
+                x_img = x_img.astype('float32')
+                y_img = y_img.astype('float32')
+                # Divide by the maximum value of each pixel
+                x_img /= 255
+                # Append images to the lists
+                x.append(x_img)
+                y.append(y_img)
+            yield np.array(x), np.array(y)
 
     # Abstract methods
     def create_layers(self):

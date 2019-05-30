@@ -2,7 +2,6 @@ try:
     from . import CommonModel
 
     from PIL import Image
-    from scipy.misc import imsave, imresize
 
     # Importing the required Keras modules containing models, layers, optimizers, losses, etc
     from keras.models import Model
@@ -59,61 +58,9 @@ class SegNet(CommonModel):
         assert exists(train_dir) is True
         assert exists(val_dir) is True
 
-        def create_generator(folder, batch_size=2):
-            x_dir = join(folder, "x")
-            y_dir = join(folder, "y")
-
-            assert exists(x_dir) is True
-            assert exists(y_dir) is True
-
-            # FIX: glob.glob is waaaaay faster than [f for f in listdir() if isfile(f)]
-            x_files = glob.glob(join(x_dir, "*.tif")) + glob.glob(join(x_dir, "*.tiff"))
-            y_files = glob.glob(join(y_dir, "*.tif")) + glob.glob(join(y_dir, "*.tiff"))
-
-            assert len(x_files) == len(y_files)
-
-            # Number of files
-            nbr_files = len(x_files)
-            # Let's begin the training/validation with the first file
-            index = 0
-            while True:
-                x, y = list(), list()
-                for i in range(batch_size):
-                    # Get a new index
-                    index = (index + 1) % nbr_files
-
-                    # MUST be true (files must have the same name)
-                    assert pathsplit(x_files[index])[-1] == pathsplit(y_files[index])[-1]
-
-                    x_img = img_to_array(load_img(x_files[index]))
-                    y_img = img_to_array(load_img(y_files[index]))
-
-                    # Resize each image
-                    x_img, y_img = imresize(x_img, self.input_shape[:2]), imresize(y_img, self.input_shape[:2])
-                    # Apply a transformation on these images
-                    # x_img, y_img = transfromXY(x_img, y_img)
-
-                    # Change y shape : (m, n, 3) -> (m, n, 2) (2 is the class number)
-                    temp_y_img = np.zeros(self.input_shape[:2] + (self.n_classes,))
-                    temp_y_img[y_img[:, :, 0] == 0]   = [1, 0]
-                    temp_y_img[y_img[:, :, 0] == 255] = [0, 1]
-                    y_img = temp_y_img
-
-                    assert y_img.shape[2] == self.n_classes
-
-                    # Convert to float
-                    x_img = x_img.astype('float32')
-                    y_img = y_img.astype('float32')
-                    # Divide by the maximum value of each pixel
-                    x_img /= 255
-                    # Append images to the lists
-                    x.append(x_img)
-                    y.append(y_img)
-                yield np.array(x), np.array(y)
-
         # Create a generator for each step
-        train_generator = create_generator(train_dir, 8)  # 12600 images
-        val_generator = create_generator(val_dir, 8)  # 5400 images
+        train_generator = self.create_generator(train_dir, 8)  # 12600 images
+        val_generator = self.create_generator(val_dir, 8)  # 5400 images
 
         # Datas
         self.datas = {"train_generator": train_generator, "val_generator": val_generator}
