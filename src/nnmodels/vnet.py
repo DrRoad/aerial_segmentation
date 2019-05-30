@@ -174,9 +174,6 @@ class VNet(CommonModel):
         # 5x5 Convolution
         conv8 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv8_2')(acti8)
         acti8 = Activation(tf.nn.relu, name='acti8_2')(conv8)
-        # 5x5 Convolution
-        conv8 = Conv2D(16, (5, 5), padding='same', data_format='channels_last', name='conv8_3')(acti8)
-        acti8 = Activation(tf.nn.relu, name='acti8_3')(conv8)
         # Add layer
         add8 = Add(name='add8_1')([up_conv7, acti8])
         # Up-convolution
@@ -186,12 +183,6 @@ class VNet(CommonModel):
         # 5x5 Convolution
         conv9 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv9_1')(up_conv8)
         acti9 = Activation(tf.nn.relu, name='acti9_1')(conv9)
-        # 5x5 Convolution
-        conv9 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv9_2')(acti9)
-        acti9 = Activation(tf.nn.relu, name='acti9_2')(conv9)
-        # 5x5 Convolution
-        conv9 = Conv2D(8, (5, 5), padding='same', data_format='channels_last', name='conv9_3')(acti9)
-        acti9 = Activation(tf.nn.relu, name='acti9_3')(conv9)
         # Add layer
         add9 = Add(name='add9_1')([up_conv8, acti9])
 
@@ -220,7 +211,7 @@ class VNet(CommonModel):
         learning_rate = 1e-3
         # Compiling the model with an optimizer and a loss function
         self._model.compile(optimizer=Adam(lr=learning_rate),
-                            loss=dice_coef_loss(),
+                            loss=dice_coef_loss,
                             metrics=["accuracy"])
 
         # Fitting the model by using our train and validation data
