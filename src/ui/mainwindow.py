@@ -44,7 +44,6 @@ try:
     config = tf.ConfigProto(intra_op_parallelism_threads=0,
                             inter_op_parallelism_threads=0,
                             allow_soft_placement=True,
-                            log_device_placement=True,
                             device_count={'CPU': num_CPU,
                                           'GPU': num_GPU},
                             gpu_options=tf.GPUOptions(allow_growth=True)
@@ -339,7 +338,6 @@ class MainWindow(QMainWindow):
                 try:
                     # Get the type of the model from its filename
                     self.model = available_models[splitext(basename(model_filename))[0].split("_")[1]]
-
                     # Extract the name
                     model_filename = model_filename.split(".")[0]
                     # Open the model
