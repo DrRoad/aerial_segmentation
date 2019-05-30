@@ -166,8 +166,8 @@ class CommonModel(NNModel):
                 x_img = img_to_array(load_img(x_files[index]))
                 y_img = img_to_array(load_img(y_files[index]))
 
-                # del(x_files[index])
-                # del(y_files[index])
+                del(x_files[index])
+                del(y_files[index])
                 nbr_files -= 1
 
                 # Resize each image
