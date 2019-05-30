@@ -12,5 +12,5 @@ from .vegnet       import VegNet
 available_models = {
     SegNet.__name__.lower() : SegNet(),
     VNet.__name__.lower()   : VNet(),
-    VegNet.__name__.lower() : VegNet
+    VegNet.__name__.lower() : VegNet()
 }
