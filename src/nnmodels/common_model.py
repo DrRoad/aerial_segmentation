@@ -4,6 +4,8 @@ Common class for all the convolutional neural network model used for image segme
 try:
     from .model import NNModel
 
+    import random
+
     from keras.preprocessing.image import img_to_array, load_img, array_to_img
     import glob
     import numpy as np
@@ -144,20 +146,18 @@ class CommonModel(NNModel):
         assert exists(y_dir) is True
 
         # FIX: glob.glob is waaaaay faster than [f for f in listdir() if isfile(f)]
-        x_files = glob.glob(join(x_dir, "*.tif")) + glob.glob(join(x_dir, "*.tiff"))
-        y_files = glob.glob(join(y_dir, "*.tif")) + glob.glob(join(y_dir, "*.tiff"))
+        x_files = [f for f_ in [glob.glob(join(x_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
+        y_files = [f for f_ in [glob.glob(join(y_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
 
         assert len(x_files) == len(y_files)
 
         # Number of files
         nbr_files = len(x_files)
-        # Let's begin the training/validation with the first file
-        index = 0
         while True:
             x, y = list(), list()
-            for i in range(batch_size):
+            for _ in range(batch_size):
                 # Get a new index
-                index = (index + 1) % nbr_files
+                index = random.randint(0, nbr_files-1)
 
                 # MUST be true (files must have the same name)
                 assert pathsplit(x_files[index])[-1] == pathsplit(y_files[index])[-1]
@@ -167,13 +167,13 @@ class CommonModel(NNModel):
 
                 del(x_files[index])
                 del(y_files[index])
+                nbr_files -= 1
 
                 # Resize each image
                 x_img = resize(x_img, self.input_shape[:2], preserve_range=True)
                 y_img = resize(y_img, self.input_shape[:2], preserve_range=True).astype(int)
                 # Apply a transformation on these images
                 # x_img, y_img = prep.transform_xy(x_img, y_img)
-
                 # Change y shape : (m, n, 3) -> (m, n, 2) (2 is the class number)
                 temp_y_img = np.zeros(self.input_shape[:2] + (self.n_classes,))
                 temp_y_img[y_img[:, :, 0] == 0] = [1, 0]
