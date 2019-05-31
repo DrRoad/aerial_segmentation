@@ -151,11 +151,7 @@ class CommonModel(NNModel):
         yfiles = [f for f_ in [glob.glob(join(y_dir, '*.' + e)) for e in self.FILE_EXTENSIONS] for f in f_]
 
         assert len(xfiles) == len(yfiles)
-
-        # Number of files
-        nbr_files = len(xfiles)
-
-        assert nbr_files % batch_size == 0
+        assert len(xfiles) % batch_size == 0
 
         # Copy
         x_files = xfiles.copy()
@@ -163,7 +159,7 @@ class CommonModel(NNModel):
         while True:
             x, y = list(), list()
             for _ in range(batch_size):
-                if nbr_files == -1:
+                if not x_files:
                     x_files = xfiles.copy()
                     y_files = yfiles.copy()
 
@@ -201,7 +197,6 @@ class CommonModel(NNModel):
                 # Delete these elements
                 del(x_files[index])
                 del(y_files[index])
-                nbr_files -= 1
             yield np.array(x), np.array(y)
 
     # Abstract methods
