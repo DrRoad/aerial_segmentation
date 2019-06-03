@@ -1,5 +1,5 @@
 """
-Common class for all the convolutional neural network model used for image segmentation.
+Common class for all the convolutional neural network models used for image segmentation.
 """
 try:
     from .model import NNModel
