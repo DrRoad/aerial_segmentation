@@ -114,6 +114,10 @@ class CommonModel(NNModel):
 
             # Transform pred array values to int values
             pred = pred.astype(int)
+
+            unique, counts = np.unique(pred, return_counts=True)
+            print(dict(zip(unique, counts)))
+
             # Create a numpy array with the RoadsModel.COLORS list
             colors = np.array(self.COLORS)
             # For each predicted value, get its associated color
