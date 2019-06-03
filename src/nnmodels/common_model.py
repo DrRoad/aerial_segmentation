@@ -1,5 +1,5 @@
 """
-Common class for all the convolutional neural network model used for image segmentation.
+Common class for all the convolutional neural network models used for image segmentation.
 """
 try:
     from .model import NNModel
@@ -144,6 +144,18 @@ class CommonModel(NNModel):
             print("Done")
 
     def create_generator(self, folder, batch_size=2):
+        """
+        Creates a generator which contains a tuple of two lists: one
+        for the input images and the other one for the segmented
+        (aka labelled) images. The length of these lists is the same
+        and is equal to batch_size.
+
+        :param folder: Folder in which input and labelled images are.
+        :param batch_size: the batch size, must be greater than 1.
+        """
+        if batch_size <= 1:
+            raise ValueError("Batch size must be greater than 1, not {}.".format(batch_size))
+        
         x_dir = join(folder, "x")
         y_dir = join(folder, "y")
 
