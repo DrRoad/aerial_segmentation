@@ -163,7 +163,7 @@ class MainWindow(QMainWindow):
         # Create a variable to prevent the use of an uninitialized model
         self.__is_model_loaded = False
         # Default model
-        self.DefaultModel = VegNet
+        self.DefaultModel = VNet
 
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normal_output_written)

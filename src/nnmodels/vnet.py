@@ -211,7 +211,7 @@ class VNet(CommonModel):
         learning_rate = 1e-3
         # Compiling the model with an optimizer and a loss function
         self._model.compile(optimizer=Adam(lr=learning_rate),
-                            loss=dice_coef_loss,
+                            loss=categorical_crossentropy,
                             metrics=["accuracy"])
 
         # Fitting the model by using our train and validation data
